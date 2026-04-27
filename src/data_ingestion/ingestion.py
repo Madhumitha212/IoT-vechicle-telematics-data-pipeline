@@ -1,53 +1,92 @@
-import pandas as pd
 import requests
+import csv
 import time
 import os
 from dotenv import load_dotenv
 from config.logger import logger
 
-# ---------------- ENV ----------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-env_path = os.path.join(BASE_DIR, "config", ".env")
+load_dotenv()
 
-load_dotenv(env_path)
-URL = os.getenv("API_URL")
+API_URL = os.getenv("API_URL")
 
-# ---------------- DATA ----------------
-df = pd.read_csv("datasets/v2.csv")
-logger.info(f"Dataset loaded: {df.shape}")
+file_path = "datasets/v2.csv"
 
-batch_size = 100
-batch_id = 1   #  add batch tracking
+BATCH_SIZE = 200
+batch = []
 
-# ---------------- INGESTION LOOP ----------------
-for i in range(0, len(df), batch_size):
+with open(file_path, mode='r') as f:
+    reader = csv.DictReader(f)
 
-    batch = df.iloc[i:i + batch_size].to_dict(orient="records")
+    for i, row in enumerate(reader, start=1):
+        try:
+            data = {
+                "timeStamp": row['timeStamp'],
+                "tripID": int(float(row['tripID'])) if row['tripID'] else None,
+                "accData": row['accData'] if row['accData'] else None,
+                "gps_speed": float(row['gps_speed']) if row['gps_speed'] else None,
+                "battery": float(row['battery']) if row['battery'] else None,
+                "cTemp": float(row['cTemp']) if row['cTemp'] else None,
+                "dtc": int(float(row['dtc'])) if row['dtc'] else None,
+                "iat": float(row['iat']) if row['iat'] else None,
+                "eLoad": float(row['eLoad']) if row['eLoad'] else None,
+                "deviceID": int(float(row['deviceID'])) if row['deviceID'] else None   
+            }
+            batch.append(data)
 
-    start_row = i
-    end_row = min(i + batch_size, len(df))
+            # When batch size reaches 200 send API request
+            if len(batch) == BATCH_SIZE:
+                response = requests.post(API_URL, json=batch, timeout=200)
+                print(response)
+                try:
+                    resp_json = response.json()
+                    print(resp_json)
+                except Exception:
+                    resp_json = {"message": response.text}
 
-    log = logger.bind(
-        batch_id=batch_id,
-        start_row=start_row,
-        end_row=end_row,
-        batch_size=len(batch)
-    )
+                if response.status_code == 200:
+                    logger.bind(
+                        start_row=i-BATCH_SIZE+1,
+                        end_row=i,
+                        s3_key=resp_json['body'].get("s3_key"),
+                        valid_records=resp_json['body'].get("valid"),
+                        failed_records=resp_json['body'].get("failed")
+                    ).info(f"Batch uploaded successfully")
+                else:
+                    logger.bind(
+                        start_row=i-BATCH_SIZE+1,
+                        end_row=i,
+                        response=resp_json
+                    ).error(f"Batch failed")
+            
+                
+                batch = []  
+                time.sleep(30)  # dealy between batches
+                logger.info("Going to next request")
+                
+        except Exception as e:
+            logger.error(f"Row {i} error: {str(e)}")
 
-    log.info("Processing batch started")
-
-    try:
-        response = requests.post(URL, json=batch, timeout=10)
+    # Send remaining records
+    if batch:
+        response = requests.post(API_URL, json=batch, timeout=2000)
+        try:
+            resp_json = response.json()
+        except Exception:
+            resp_json = {"message": response.text}
 
         if response.status_code == 200:
-            log.info("Batch SUCCESS")
+            logger.bind(
+                start_row=i-len(batch)+1,
+                end_row=i,
+                s3_key=resp_json.get("s3_key"),
+                valid_records=resp_json.get("valid"),
+                failed_records=resp_json.get("failed")
+            ).info("Final batch uploaded successfully")
         else:
-            log.error(f"Batch FAILED | response={response.text}")
+            logger.bind(
+                start_row=i-len(batch)+1,
+                end_row=i,
+                response=resp_json
+            ).error("Final batch failed")
 
-    except Exception as e:
-        log.exception(f"Batch ERROR: {e}")
-
-    time.sleep(3)
-    batch_id += 1
-
-logger.info("Ingestion completed successfully")
+logger.info("Streaming completed successfully")
