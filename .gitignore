@@ -1,0 +1,37 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual Environment ---
+venv/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Logs ---
+logs/
+*.log
+*.out
+*.tmp
+
+# --- Environment & Secrets ---
+.env
+
+# -- dataset 
+v2.csv
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db
+
+# --- Editor Specific ---
+.vscode/
+
+# --- Installer & Binaries ---
+AWSCLIV2.msi
+*.exe
+*.zip
+*.tar
+*.gz
