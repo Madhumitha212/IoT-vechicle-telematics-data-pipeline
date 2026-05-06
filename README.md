@@ -36,7 +36,7 @@ Sensor/Data Source → API Gateway → Lambda → S3 (Raw)
 ## Dataset
 
 - Source: Kaggle Vehicle Telematics Dataset
-- Link : Link :https://www.kaggle.com/datasets/yunlevin/levin-vehicle-telematics/dataselect=v2.csv
+- Link :https://www.kaggle.com/datasets/yunlevin/levin-vehicle-telematics/dataselect=v2.csv
 - Columns:
   - tripID
   - deviceID
@@ -195,7 +195,6 @@ Sensor/Data Source → API Gateway → Lambda → S3 (Raw)
 ````
 ## Project Structure
 
-```bash
 IoT_vehicle_telematics_data_pipeline/
 │
 ├── requirements.txt
