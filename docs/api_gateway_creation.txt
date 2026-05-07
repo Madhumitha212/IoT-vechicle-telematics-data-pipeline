@@ -1,0 +1,95 @@
+Amazon API Gateway Setup Guide
+
+Purpose :
+Amazon API Gateway exposes an HTTP endpoint that receives telemetry records from external systems and forwards them to the AWS Lambda ingestion function.
+
+Step 1 — Open API Gateway Console
+1. Login to AWS Console
+2. Search for:  API Gateway
+3. Open Amazon API Gateway service
+
+Step 2 — Create REST API
+
+1. Click:  Create API
+2. Select: REST API
+3. Click:  Build
+
+Step 3 — Configure API
+
+Enter the following details:
+
+| Field         | Value                           |
+| ------------- | ------------------------------- |
+| API Name      | vehicle-api          |
+| Description   | Vehicle telemetry ingestion API |
+| Endpoint Type | Regional                        |
+
+Click:  Create API
+
+Step 4 — Create Resource
+
+1. Go to:  Resources
+2. Click:  Actions → Create Resource
+3. Configure resource:
+
+| Field         | Value     |
+| ------------- | --------- |
+| Resource Name | vehicles  |
+| Resource Path | /ingestion |
+
+4. Click:  Create Resource
+
+Step 5 — Create POST Method
+
+1. Select: /ingestion
+2. Click:  Actions → Create Method
+3. Select: POST
+4. Click checkmark
+
+Step 6 — Integrate Lambda Function
+
+Configure integration:
+
+| Field                    | Value                        |
+| ------------------------ | ---------------------------- |
+| Integration Type         | Lambda Function              |
+| Lambda Proxy Integration | Enabled                      |
+| Region                   | Your AWS Region              |
+| Lambda Function          | vehicle_ingestion |
+
+Click: Save
+
+Allow API Gateway permissions to invoke Lambda.
+
+Step 8 — Deploy API
+
+1. Click:  Actions → Deploy API
+2. Create deployment stage:
+
+| Field            | Value |
+| ---------------- | ----- |
+| Deployment Stage | dev   |
+
+3. Click: Deploy
+
+Step 9 — Copy API Endpoint URL
+
+After deployment, API Gateway generates an endpoint URL.
+
+Example:
+
+https://abc123.execute-api.ap-south-1.amazonaws.com/dev/ingestion
+
+This endpoint will be used by:
+
+* Sensor simulators
+* Streaming scripts
+* External clients
+
+Step 10 — Test API Endpoint
+
+Use:
+
+* Postman
+* curl
+* Python requests library
