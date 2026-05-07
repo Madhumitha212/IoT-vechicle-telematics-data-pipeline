@@ -1,0 +1,109 @@
+AWS Lambda Function Creation Guide
+
+Purpose:
+
+This Lambda function receives vehicle telemetry records from Amazon API Gateway, validates and enriches the data, and stores the processed records into Amazon S3.
+
+Step 1 — Open AWS Lambda Console
+
+1. Login to AWS Console
+2. Search for : Lambda
+3. Open AWS Lambda service
+
+Step 2 — Create Lambda Function
+
+1. Click:  Create Function
+2. Select:  Author from scratch
+3. Configure basic details:
+
+| Field         | Value                        |
+| ------------- | ---------------------------- |
+| Function Name | vehicle_telematics_ingestion |
+| Runtime       | Python 3.x                   |
+| Architecture  | x86_64                       |
+
+4. Under Permissions:
+
+Create new role with basic Lambda permissions
+OR
+Use existing IAM role with S3 access
+
+5. Click: Create Function
+
+Step 3 — Configure IAM Permissions
+
+During Lambda creation, an IAM execution role was configured to allow the function to access Amazon S3.
+
+1. Opened the Lambda function
+2. Navigated to:
+Configuration → Permissions
+
+3. Opened the attached IAM Role
+4. Added the AWS managed policy:  AmazonS3FullAccess
+
+Purpose
+
+This permission allows the Lambda function to:
+
+* Upload telemetry records into Amazon S3
+* Read S3 objects if required
+* Perform S3 object operations during ingestion
+
+Note :
+
+For development and testing purposes, full S3 access was provided using the AWS managed policy.
+
+In production environments, it is recommended to follow the Principle of Least Privilege by granting access only to specific S3 buckets and required operations.
+
+Step 4 — Add Lambda Function Code
+
+1. Open the Lambda function
+2. Go to: Code
+3. Upload or paste your Python Lambda code
+
+file location in project:
+
+src/data_ingestion/lambda_function.py
+
+Step 5 — Deploy Lambda Function
+
+Click:  Deploy
+
+AWS Lambda will now save and deploy your code.
+
+# Step 8 — Test Lambda Function
+
+1. Click:  Test
+2. Create sample event:
+
+{
+  "body": "[{\"tripID\":\"T1001\",\"deviceID\":\"D100\",\"timeStamp\":\"2025-07-10T10:20:30\",\"gps_speed\":45,\"battery\":80,\"cTemp\":75,\"dtc\":0,\"eLoad\":30,\"Iat\":25}]"
+}
+
+3. Run test
+
+4. Verify:
+
+* Lambda execution successful
+* Data uploaded to S3 bucket
+* Logs generated in CloudWatch
+
+# Step 9 — Verify S3 Storage
+
+Open Amazon S3 bucket and verify data is stored using partition structure:
+/raw/year=YYYY/month=MM/day=DD/hour=HH/
+
+Example:
+/raw/year=2026/month=05/day=07/hour=10/
+
+Responsibilities of Lambda Function
+
+The Lambda function performs:
+
+* Data validation
+* Required field checks
+* Numeric data validation
+* Metadata enrichment
+* Anomaly flag generation
+* S3 storage handling
+* Error logging
