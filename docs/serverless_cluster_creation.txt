@@ -1,0 +1,73 @@
+Create Amazon Redshift Serverless :
+
+Objective:
+    Create an Amazon Redshift Serverless data warehouse environment to store and analyze telecom customer churn data.
+
+Step 1: 
+   - Open AWS Console
+   - Login to AWS Management Console.
+        Search for:
+        Amazon Redshift
+   - Open the Redshift service dashboard.
+
+Step 2: 
+    - Select Redshift Serverless
+    - Because serverless automatically manages compute resources and avoids cluster administration.
+
+Step 3: Create Namespace
+    - Namespace stores database metadata and tables.
+
+    Configuration used:
+    Namespace Name: telecom-namespace
+    Database Name: telemetry
+    Admin User: awsuser
+    Admin Password: ********
+
+Step 4: Create Workgroup
+    Workgroup provides compute resources for query execution.
+
+    Configuration used:
+    Workgroup Name: telecom-workgroup
+    Base Capacity: 4 RPUs
+    Publicly Accessible: Enabled
+    VPC: Select the your own VPC , if not create one.
+    Subnet Group: Default subnet group
+    Security Group: Default security group / create a security which allows your IP , 
+                    and Port should be 5439.
+
+Step 5: Attach IAM Role
+
+    IAM role is required to allow Redshift access to Amazon S3.
+
+    IAM role attached:
+    RedshiftS3AccessRole
+
+    Permission policy attached:
+    AmazonS3ReadOnlyAccess
+
+    Purpose:
+    Allows COPY command to load CSV files from S3 bucket.
+
+Step 6: Review and Create
+
+    Review all settings.
+
+    Click:
+        - Create Workgroup
+        - AWS automatically creates:
+        - Namespace
+        - Workgroup
+        - Endpoint
+
+Step 7: Verify Availability
+    Wait until status changes to:
+    Available
+
+Then open Query Editor v2.
+
+Step 8: Connect to Database
+
+Use:
+    Workgroup: telecom-workgroup
+    Database: telemetry
+    Authentication: admin credentials
