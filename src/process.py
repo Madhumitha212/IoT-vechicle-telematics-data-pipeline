@@ -3,7 +3,7 @@ from pyspark.sql import SparkSession
 from src.data_processing.data_cleaning import clean_data
 from src.data_processing.time_series import add_window_features
 from src.data_processing.anamoly_detection import detect_anomalies
-from src.data_processing.aggregation import run_aggregations
+from src.data_processing.analytics import run_aggregations
 
 from config.logger import logger
 
